@@ -19,7 +19,7 @@ w=120
 Ea=0
 B=0.1
 
-distance=100
+distance=101
 
 
 
