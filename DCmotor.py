@@ -10,20 +10,21 @@ K=8.72
 R=0.3
 I=0
 V=24
-L=1
+L=0.005
 
 D=0.15
 dI=0
 
 w=120
 Ea=0
+B=0.1
 
 distance=100
 
 
 
-t=30			#time in seconds
-dt=0.0001		#step size in seconds
+t=1			#time in seconds
+dt=0.000001		#step size in seconds
 
 y=np.zeros(t/dt)
 y2=np.zeros(t/dt)
@@ -34,27 +35,27 @@ p=np.zeros(t/dt)
 
 for i in range(0,int(t/dt)):
 
-	w=20*(distance-(theta*D/2))
+	# w=20*(distance-(theta*D/2))
 
 
 
-	V=24*(w-omega)
+	# V=24*(w-omega)
 
-	if V>24:
-		V=24
-	if V<-24:
-		V=-24
+	# if V>24:
+	# 	V=24
+	# if V<-24:
+	# 	V=-24
 
-	T=K*I
+	T=K*I-B*omega
 	Ea=omega/K
 
 	domega=T/J
-	omega=domega+domega*dt
+	omega=omega+domega*dt
 	theta=theta+omega*dt
 
 	#I=(V-Ea)/R
 
-	dI = (V - Ea - R*I - dI*L) / L
+	dI = (V - Ea - R*I) / L
 	I = I + dI*dt
 
 	y[i]=omega
