@@ -5,12 +5,14 @@ import matplotlib.pyplot as plt
 theta=0
 domega=0
 omega=0
-J=0.1
+
+
+m=2200
 K=8.72
 R=0.3
 I=0
 V=24
-L=0.005
+L=0.001
 
 D=0.15
 dI=0
@@ -18,13 +20,15 @@ dI=0
 w=120
 Ea=0
 B=0.1
+J=0.1+m*(D/2)**2
+print J
 
-distance=101
+distance=100
 
 
 
-t=1			#time in seconds
-dt=0.000001		#step size in seconds
+t=10			#time in seconds
+dt=0.0001		#step size in seconds
 
 y=np.zeros(t/dt)
 y2=np.zeros(t/dt)
@@ -36,9 +40,6 @@ p=np.zeros(t/dt)
 for i in range(0,int(t/dt)):
 
 	# w=20*(distance-(theta*D/2))
-
-
-
 	# V=24*(w-omega)
 
 	# if V>24:
@@ -53,8 +54,6 @@ for i in range(0,int(t/dt)):
 	omega=omega+domega*dt
 	theta=theta+omega*dt
 
-	#I=(V-Ea)/R
-
 	dI = (V - Ea - R*I) / L
 	I = I + dI*dt
 
@@ -68,17 +67,21 @@ for i in range(0,int(t/dt)):
 
 print omega
 
-plt.subplot(311)
+plt.subplot(411)
 plt.grid(True)
 plt.plot(x,y)
 plt.ylabel('Velocity [rad/s]')
-plt.subplot(312)
-plt.grid(True)
-plt.plot(x,y2,x,y3)
-plt.ylabel('Current [A]')
-plt.subplot(313)
+plt.subplot(412)
 plt.grid(True)
 plt.plot(x,p)
 plt.ylabel('Position[M]')
+plt.subplot(413)
+plt.grid(True)
+plt.plot(x,y2)
+plt.ylabel('Current [A]')
+plt.subplot(414)
+plt.grid(True)
+plt.plot(x,y3)
+plt.ylabel('Voltage [V]')
 plt.xlabel('Time [seconds]')
 plt.show()
