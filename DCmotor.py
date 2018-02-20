@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 class DC_Motor:
 
-	def __init__(self,K,B,J,R,L):
+	def __init__(self,K,R,L,B=0,J=0,F=0):
 		self.theta=0
 		self.domega=0
 		self.omega=0
@@ -16,10 +16,17 @@ class DC_Motor:
 		self.J=J	#Motor Moment of inertia
 		self.R=R 	#Motor Resistance
 		self.L=L
+		self.F=F
+		self.Fa=0
 
 	def update(self,V,dt):
 
-		self.T=self.K*self.I-self.B*self.omega
+		if abs(self.K*self.I-self.B*self.omega)>self.F:
+			self.Fa=self.F*np.sign(self.omega)
+		else:
+			self.Fa=self.K*self.I-self.B*self.omega
+
+		self.T=self.K*self.I-self.B*self.omega-self.Fa
 		self.Ea=self.omega/self.K
 
 		self.domega=self.T/self.J
@@ -55,31 +62,31 @@ class Motor_Controller:
 		self.sat=1
 
 
+
 	
 m=2200
 V=24
 
 D=0.15
-dI=0
 
-Motor1=DC_Motor(8.72,0.1,0.1+m*(D/2)**2,0.3,0.001)
-C1=Motor_Controller()
-C1.saturate(24,0)
-
-t=10			#time in seconds
+t=20			#time in seconds
 dt=0.0001		#step size in seconds
 
 y=[]
-
 y2=[]
 y3=[]
 x=[]
 p=[]
 
 
+Motor1=DC_Motor(8.72,0.3,0.001,B=0.1,J=0.1+m*(D/2)**2)
+C1=Motor_Controller()
+C1.saturate(24,-24)
+
+
 for i in range(0,int(t/dt)):
 
-	V=C1.P(100,Motor1.omega,24)
+	V=C1.P(200,Motor1.omega,24)
 
 	Motor1.update(V,dt)
 
@@ -87,11 +94,10 @@ for i in range(0,int(t/dt)):
 	y2.append(Motor1.I)
 	y3.append(V)
 	x.append(i*dt)
-	p.append(Motor1.theta*D/2)
-
-
+	p.append(Motor1.theta)
 
 print Motor1.omega
+
 
 plt.subplot(411)
 plt.grid(True)
@@ -100,7 +106,7 @@ plt.ylabel('Velocity [rad/s]')
 plt.subplot(412)
 plt.grid(True)
 plt.plot(x,p)
-plt.ylabel('Position[M]')
+plt.ylabel('Position[rad]')
 plt.subplot(413)
 plt.grid(True)
 plt.plot(x,y2)
