@@ -2,70 +2,96 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-theta=0
-domega=0
-omega=0
+class DC_Motor:
+
+	def __init__(self,K,B,J,R,L):
+		self.theta=0
+		self.domega=0
+		self.omega=0
+		self.T=0
+		self.I=0
+
+		self.K=K 	#Motor Constant
+		self.B=B 	#Viscous damping coefficient
+		self.J=J	#Motor Moment of inertia
+		self.R=R 	#Motor Resistance
+		self.L=L
+
+	def update(self,V,dt):
+
+		self.T=self.K*self.I-self.B*self.omega
+		self.Ea=self.omega/self.K
+
+		self.domega=self.T/self.J
+		self.omega=self.omega+self.domega*dt
+		self.theta=self.theta+self.omega*dt
+
+		self.dI = (V - self.Ea - self.R*self.I) / self.L
+		self.I = self.I + self.dI*dt
+
+		return(self.omega,self.I)
+
+class Motor_Controller:
+
+	def __init__(self):
+		self.sat=0
+
+	def P(self,target,current,k):
+
+		self.e = target - current
+		self.p=self.e*k
+
+		if self.sat==1:
+			if self.p>self.upper:
+				self.p=self.upper
+			if self.p<self.lower:
+				self.p=self.lower
+
+		return self.p
+
+	def saturate(self,upper,lower):
+		self.upper=upper
+		self.lower=lower
+		self.sat=1
 
 
+	
 m=2200
-K=8.72
-R=0.3
-I=0
 V=24
-L=0.001
 
 D=0.15
 dI=0
 
-w=120
-Ea=0
-B=0.1
-J=0.1+m*(D/2)**2
-print J
-
-distance=100
-
-
+Motor1=DC_Motor(8.72,0.1,0.1+m*(D/2)**2,0.3,0.001)
+C1=Motor_Controller()
+C1.saturate(24,0)
 
 t=10			#time in seconds
 dt=0.0001		#step size in seconds
 
-y=np.zeros(t/dt)
-y2=np.zeros(t/dt)
-y3=np.zeros(t/dt)
-x=np.zeros(t/dt)
-p=np.zeros(t/dt)
+y=[]
+
+y2=[]
+y3=[]
+x=[]
+p=[]
 
 
 for i in range(0,int(t/dt)):
 
-	# w=20*(distance-(theta*D/2))
-	# V=24*(w-omega)
+	V=C1.P(100,Motor1.omega,24)
 
-	# if V>24:
-	# 	V=24
-	# if V<-24:
-	# 	V=-24
+	Motor1.update(V,dt)
 
-	T=K*I-B*omega
-	Ea=omega/K
-
-	domega=T/J
-	omega=omega+domega*dt
-	theta=theta+omega*dt
-
-	dI = (V - Ea - R*I) / L
-	I = I + dI*dt
-
-	y[i]=omega
-	y2[i]=I
-	y3[i]=V
-	x[i]=i*dt
-	p[i]=theta*D/2
+	y.append(Motor1.omega)
+	y2.append(Motor1.I)
+	y3.append(V)
+	x.append(i*dt)
+	p.append(Motor1.theta*D/2)
 
 
 
-print omega
+print Motor1.omega
 
 plt.subplot(411)
 plt.grid(True)
